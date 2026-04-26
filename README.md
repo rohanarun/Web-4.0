@@ -22,6 +22,15 @@ The default model is OpenRouter `openai/gpt-5.5`, and the user can save an OpenR
 - Lets the user run a separate remix prompt against the current generated frontend.
 - Lets the user manually edit the generated `html`, `css`, and `js` live at runtime.
 
+## Quick Start
+
+1) Download all the files from this github repo and extract into a folder
+2) go to chrome://extensions in chrome 
+3) click "load unpacked"
+4) select the folder with the unzipped files 
+5) enjoy :) 
+
+
 ## How It Works
 
 ```mermaid
