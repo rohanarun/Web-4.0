@@ -153,7 +153,6 @@ overlay.css          Lightweight fixed control dock styles
 popup.html/js/css    Small control surface from the browser action popup
 studio.html/js/css   Full-screen designed control studio for prompts and actions
 ui-common.js         Shared message helpers for popup and studio
-vendor/              Local GSAP vendor files used by the studio page
 ```
 
 ## Settings and Storage
@@ -241,7 +240,7 @@ The model is editable in both the popup and the Studio UI.
 
 ## Development Notes
 
-- The Studio page is a local extension page with a custom UI and GSAP-driven motion.
+- The Studio page is a local extension page with a custom UI.
 - The live runtime is intentionally plain `html`, `css`, and `js` so model output can be injected directly.
 - The current implementation prefers raw streamed HTML over strict structured output so it remains usable even if model formatting is imperfect.
 

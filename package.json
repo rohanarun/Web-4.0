@@ -9,8 +9,5 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "gsap": "^3.15.0"
-  }
+  "type": "commonjs"
 }

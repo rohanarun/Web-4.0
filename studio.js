@@ -20,7 +20,6 @@ async function bootstrapStudio() {
   applySettings(settings);
   await refreshStudioState();
   attachStudioActions();
-  initializeMotion();
   stateRefreshInterval = window.setInterval(refreshStudioState, 10000);
 }
 
@@ -111,70 +110,6 @@ function renderStudioState(state) {
     }
     ${state.lastError ? `<div><strong>Error:</strong> ${Web40UI.escapeHtml(state.lastError)}</div>` : ""}
   `;
-}
-
-function initializeMotion() {
-  if (!window.gsap || !window.ScrollTrigger) {
-    return;
-  }
-
-  gsap.registerPlugin(ScrollTrigger);
-
-  document.querySelectorAll('[data-reveal="words"]').forEach((node) => {
-    splitIntoWords(node);
-    const words = node.querySelectorAll(".reveal-word");
-    gsap.fromTo(
-      words,
-      { opacity: 0.1 },
-      {
-        opacity: 1,
-        stagger: 0.08,
-        ease: "none",
-        scrollTrigger: {
-          trigger: node,
-          start: "top 82%",
-          end: "bottom 35%",
-          scrub: true
-        }
-      }
-    );
-  });
-
-  document.querySelectorAll(".media-card").forEach((card) => {
-    gsap.fromTo(
-      card,
-      {
-        scale: 0.82,
-        opacity: 0.35,
-        filter: "brightness(0.58)"
-      },
-      {
-        scale: 1,
-        opacity: 1,
-        filter: "brightness(1)",
-        ease: "none",
-        scrollTrigger: {
-          trigger: card,
-          start: "top 92%",
-          end: "bottom 18%",
-          scrub: true
-        }
-      }
-    );
-  });
-}
-
-function splitIntoWords(node) {
-  if (node.dataset.wordsSplit === "true") {
-    return;
-  }
-
-  const text = node.textContent || "";
-  const words = text.trim().split(/\s+/).filter(Boolean);
-  node.innerHTML = words
-    .map((word) => `<span class="reveal-word">${Web40UI.escapeHtml(word)}</span>`)
-    .join(" ");
-  node.dataset.wordsSplit = "true";
 }
 
 function setStudioStatus(message) {
