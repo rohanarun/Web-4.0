@@ -6,6 +6,8 @@ const MAX_NETWORK_ENTRIES = 36;
 const MAX_SCRIPT_SNIPPETS = 3;
 const MAX_STYLESHEET_SNIPPETS = 2;
 const STREAM_PROGRESS_INTERVAL_MS = 140;
+const MAX_CONTINUATION_ATTEMPTS = 8;
+const CONTINUATION_CONTEXT_CHARS = 24000;
 
 const DEFAULT_SETTINGS = {
   apiKey: "",
@@ -286,60 +288,97 @@ async function requestArtifactFromModel({
   existingArtifact,
   onProgress
 }) {
-  const requestBody = {
-    model: settings.model,
-    max_tokens: 7000,
-    stream: true,
-    messages: [
-      {
-        role: "system",
-        content: [
-          "You are Web 4.0, an expert reverse-engineering UI architect.",
-          "The generated result will replace the current document.body.innerHTML directly in the live page.",
-          "Return raw HTML only. Do not return JSON. Do not return markdown fences. Do not explain the code.",
-          "You may include inline <style> and <script> tags inside the HTML if needed.",
-          "The response should still be useful even if it is streamed and temporarily incomplete.",
-          "The generated experience must stay wired to the source site's real data, API endpoints, and page context.",
-          "Use only plain html, css, and js. No external libraries.",
-          "Assume these helpers exist directly on the live page:",
-          "- await window.Web40.getPageContext()",
-          "- await window.Web40.getCapturedApis()",
-          "- await window.Web40.callApi({ url, method, headers, body, credentials })",
-          "- window.Web40.registerCleanup(fn)",
-          "Prefer live data through those helpers instead of inventing fake payloads.",
-          "If the site has no useful API calls yet, build from page context first and progressively enhance with captured endpoints.",
-          "The HTML should look like a finished frontend, not a loading skeleton.",
-          "Do not wrap the result in triple backticks."
-        ].join("\n")
-      },
-      {
-        role: "user",
-        content: buildModelPrompt({ settings, mode, sitePayload, existingArtifact })
-      }
-    ]
-  };
+  const baseMessages = [
+    {
+      role: "system",
+      content: [
+        "You are Web 4.0, an expert reverse-engineering UI architect.",
+        "The generated result will replace the current document.body.innerHTML directly in the live page.",
+        "Return raw HTML only. Do not return JSON. Do not return markdown fences. Do not explain the code.",
+        "You may include inline <style> and <script> tags inside the HTML if needed.",
+        "The response should still be useful even if it is streamed and temporarily incomplete.",
+        "The generated experience must stay wired to the source site's real data, API endpoints, and page context.",
+        "Use only plain html, css, and js. No external libraries.",
+        "Assume these helpers exist directly on the live page:",
+        "- await window.Web40.getPageContext()",
+        "- await window.Web40.getCapturedApis()",
+        "- await window.Web40.callApi({ url, method, headers, body, credentials })",
+        "- window.Web40.registerCleanup(fn)",
+        "Prefer live data through those helpers instead of inventing fake payloads.",
+        "If the site has no useful API calls yet, build from page context first and progressively enhance with captured endpoints.",
+        "The HTML should look like a finished frontend, not a loading skeleton.",
+        "Do not wrap the result in triple backticks."
+      ].join("\n")
+    },
+    {
+      role: "user",
+      content: buildModelPrompt({ settings, mode, sitePayload, existingArtifact })
+    }
+  ];
 
   let streamedText = "";
   let lastProgressAt = 0;
+  let lastFinishReason = null;
+  let attempt = 0;
 
-  await performOpenRouterStream(settings.apiKey, requestBody, async (delta) => {
-    streamedText += delta;
-    const now = Date.now();
-    if (now - lastProgressAt < STREAM_PROGRESS_INTERVAL_MS) {
-      return;
-    }
+  while (attempt < MAX_CONTINUATION_ATTEMPTS) {
+    const continuation = attempt > 0;
+    const attemptMessages = continuation
+      ? buildContinuationMessages(baseMessages, streamedText)
+      : baseMessages;
+    const requestBody = {
+      model: settings.model,
+      stream: true,
+      messages: attemptMessages
+    };
 
-    lastProgressAt = now;
+    let attemptText = "";
+    const streamResult = await performOpenRouterStream(settings.apiKey, requestBody, async (delta) => {
+      attemptText += delta;
+      const now = Date.now();
+      if (now - lastProgressAt < STREAM_PROGRESS_INTERVAL_MS) {
+        return;
+      }
+
+      lastProgressAt = now;
+      const previewText = appendWithOverlap(streamedText, attemptText);
+      const partialArtifact = parseArtifactFromText(previewText, sitePayload.site.title || "Web 4.0 Remix");
+      await onProgress?.({
+        artifact: partialArtifact,
+        statusText: continuation
+          ? `Continuing generation pass ${attempt + 1}...`
+          : determineStreamStatus(previewText)
+      });
+    });
+
+    streamedText = appendWithOverlap(streamedText, attemptText);
+    lastFinishReason = streamResult.finishReason || null;
+
     const partialArtifact = parseArtifactFromText(streamedText, sitePayload.site.title || "Web 4.0 Remix");
     await onProgress?.({
       artifact: partialArtifact,
-      statusText: determineStreamStatus(streamedText)
+      statusText:
+        needsContinuation(streamedText, lastFinishReason) && attempt + 1 < MAX_CONTINUATION_ATTEMPTS
+          ? `Model hit an output limit, continuing with pass ${attempt + 2}...`
+          : determineStreamStatus(streamedText)
     });
-  });
+
+    if (!needsContinuation(streamedText, lastFinishReason)) {
+      break;
+    }
+
+    attempt += 1;
+  }
 
   const finalArtifact = parseArtifactFromText(streamedText, sitePayload.site.title || "Web 4.0 Remix");
   if (!finalArtifact.rawHtml.trim()) {
     throw new Error("The model did not return any HTML in the streamed response.");
+  }
+
+  if (needsContinuation(streamedText, lastFinishReason)) {
+    throw new Error(
+      `The model kept hitting output limits after ${MAX_CONTINUATION_ATTEMPTS} passes. Try a narrower prompt or a simpler source page.`
+    );
   }
 
   return finalArtifact;
@@ -369,6 +408,7 @@ async function performOpenRouterStream(apiKey, requestBody, onTextDelta) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  let finishReason = null;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -378,7 +418,10 @@ async function performOpenRouterStream(apiKey, requestBody, onTextDelta) {
     while (boundaryIndex !== -1) {
       const rawEvent = buffer.slice(0, boundaryIndex);
       buffer = buffer.slice(boundaryIndex + 2);
-      await processSseEvent(rawEvent, onTextDelta);
+      const eventResult = await processSseEvent(rawEvent, onTextDelta);
+      if (eventResult?.finishReason) {
+        finishReason = eventResult.finishReason;
+      }
       boundaryIndex = buffer.indexOf("\n\n");
     }
 
@@ -389,8 +432,13 @@ async function performOpenRouterStream(apiKey, requestBody, onTextDelta) {
 
   buffer += decoder.decode();
   if (buffer.trim()) {
-    await processSseEvent(buffer, onTextDelta);
+    const eventResult = await processSseEvent(buffer, onTextDelta);
+    if (eventResult?.finishReason) {
+      finishReason = eventResult.finishReason;
+    }
   }
+
+  return { finishReason };
 }
 
 async function processSseEvent(rawEvent, onTextDelta) {
@@ -426,10 +474,15 @@ async function processSseEvent(rawEvent, onTextDelta) {
     throw new Error(`OpenRouter stream error: ${payload.error.message}`);
   }
 
-  const deltaText = extractMessageContent(payload?.choices?.[0]?.delta?.content);
+  const choice = payload?.choices?.[0] || {};
+  const deltaText = extractMessageContent(choice?.delta?.content);
   if (deltaText) {
     await onTextDelta(deltaText);
   }
+
+  return {
+    finishReason: choice.finish_reason || choice.native_finish_reason || null
+  };
 }
 
 function buildModelPrompt({ settings, mode, sitePayload, existingArtifact }) {
@@ -492,6 +545,77 @@ function determineStreamStatus(streamedText) {
     return "Streaming HTML replacement";
   }
   return "Planning the new page runtime";
+}
+
+function needsContinuation(streamedText, finishReason) {
+  if (finishReason === "length") {
+    return true;
+  }
+
+  return htmlLooksIncomplete(streamedText) && finishReason !== "stop";
+}
+
+function buildContinuationMessages(baseMessages, streamedText) {
+  const suffix = streamedText.slice(-CONTINUATION_CONTEXT_CHARS);
+  return [
+    ...baseMessages,
+    {
+      role: "assistant",
+      content: suffix
+    },
+    {
+      role: "user",
+      content: [
+        "Continue exactly from the next character.",
+        "Return only the remaining HTML.",
+        "Do not restart the page. Do not repeat earlier content. Do not explain anything.",
+        "If the previous response ended inside a tag, a style block, or a script block, continue and finish it cleanly."
+      ].join("\n")
+    }
+  ];
+}
+
+function appendWithOverlap(existingText, nextText) {
+  if (!existingText) {
+    return nextText || "";
+  }
+  if (!nextText) {
+    return existingText;
+  }
+
+  const maxOverlap = Math.min(existingText.length, nextText.length, 4000);
+  for (let overlap = maxOverlap; overlap > 0; overlap -= 1) {
+    if (existingText.slice(-overlap) === nextText.slice(0, overlap)) {
+      return existingText + nextText.slice(overlap);
+    }
+  }
+
+  return existingText + nextText;
+}
+
+function htmlLooksIncomplete(streamedText) {
+  const html = stripHtmlFence(streamedText);
+  if (!html.trim()) {
+    return true;
+  }
+
+  if (/<[^>]*$/.test(html)) {
+    return true;
+  }
+
+  const openStyles = (html.match(/<style\b/gi) || []).length;
+  const closeStyles = (html.match(/<\/style>/gi) || []).length;
+  if (openStyles !== closeStyles) {
+    return true;
+  }
+
+  const openScripts = (html.match(/<script\b/gi) || []).length;
+  const closeScripts = (html.match(/<\/script>/gi) || []).length;
+  if (openScripts !== closeScripts) {
+    return true;
+  }
+
+  return false;
 }
 
 function parseArtifactFromText(text, fallbackTitle) {
