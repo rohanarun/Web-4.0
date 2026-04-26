@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Web 4.0 Studio</title>
+    <link rel="stylesheet" href="studio.css" />
+  </head>
+  <body>
+    <main class="studio-main overflow-x-hidden w-full max-w-full">
+      <nav class="studio-nav">
+        <div class="studio-nav-brand">
+          <span class="studio-mark"></span>
+          <div>
+            <strong>Web 4.0</strong>
+            <span>Runtime reverse engineering for the live web</span>
+          </div>
+        </div>
+        <div class="studio-nav-actions">
+          <button type="button" data-studio-action="save">Save prompts</button>
+          <button type="button" data-studio-action="analyze" class="primary">Analyze current tab</button>
+          <button type="button" data-studio-action="toggle">Toggle overlay</button>
+        </div>
+      </nav>
+
+      <section class="studio-hero studio-chapter">
+        <div class="studio-hero-copy">
+          <h1>
+            Rebuild the
+            <span
+              class="inline-image-pill"
+              style="background-image: url('https://picsum.photos/seed/web40-pill/420/180');"
+            ></span>
+            live web into custom interfaces that still speak the site&rsquo;s real APIs.
+          </h1>
+          <p class="studio-hero-text" data-reveal="words">
+            Web 4.0 watches a site&rsquo;s structure, runtime code edges, and network traffic from the moment the page is
+            live, then regenerates an alternate frontend that can be remixed in prompt space or edited directly in
+            html, css, and js without losing the underlying data contracts.
+          </p>
+          <div class="studio-hero-actions">
+            <button type="button" data-studio-action="analyze" class="primary">Replace live page</button>
+            <button type="button" data-studio-action="remix">Run remix prompt</button>
+          </div>
+        </div>
+
+        <div class="studio-hero-visual media-card">
+          <div class="studio-floating-card">
+            <span>OpenRouter model</span>
+            <strong id="hero-model">openai/gpt-5.5</strong>
+            <p>Verified default route for the extension runtime.</p>
+          </div>
+          <div class="studio-floating-card">
+            <span>Captured requests</span>
+            <strong id="hero-network-count">0</strong>
+            <p>Fetch and XHR calls grouped into remixable API signatures.</p>
+          </div>
+          <div class="studio-floating-image">
+            <img src="https://picsum.photos/seed/web40-hero/1280/1600" alt="Abstract web collage" />
+          </div>
+        </div>
+      </section>
+
+      <section class="studio-marquee-band">
+        <div class="studio-marquee-track">
+          <span>DOM Graph</span>
+          <span>Script Edges</span>
+          <span>API Replay</span>
+          <span>Runtime Remix</span>
+          <span>Editable Source</span>
+          <span>Overlay Studio</span>
+          <span>DOM Graph</span>
+          <span>Script Edges</span>
+          <span>API Replay</span>
+          <span>Runtime Remix</span>
+          <span>Editable Source</span>
+          <span>Overlay Studio</span>
+        </div>
+      </section>
+
+      <section class="studio-interest studio-chapter">
+        <div class="studio-bento-grid">
+          <article class="studio-card span-5">
+            <div class="studio-card-head">
+              <h2>Control the model and credentials</h2>
+              <p>The key is stored locally in Chrome on this machine. Prompts stay editable and reusable.</p>
+            </div>
+            <label class="studio-field">
+              <span>OpenRouter key</span>
+              <input id="api-key" type="password" placeholder="sk-or-v1-..." />
+            </label>
+            <label class="studio-field">
+              <span>Model</span>
+              <input id="model" type="text" />
+            </label>
+              <div class="studio-inline-actions">
+              <button type="button" data-studio-action="save">Save settings</button>
+              <button type="button" data-studio-action="open-overlay">Show dock</button>
+            </div>
+          </article>
+
+          <article class="studio-card span-7">
+            <div class="studio-card-head">
+              <h2>Default generation prompt</h2>
+              <p>This brief steers the first reconstruction pass for any page you analyze.</p>
+            </div>
+            <label class="studio-field">
+              <span>Prompt</span>
+              <textarea id="default-prompt"></textarea>
+            </label>
+          </article>
+
+          <article class="studio-card span-4">
+            <div class="studio-card-head">
+              <h2>Remix prompt</h2>
+              <p>Use this to push the already-generated frontend into a new direction without losing live data.</p>
+            </div>
+            <label class="studio-field">
+              <span>Prompt</span>
+              <textarea id="remix-prompt"></textarea>
+            </label>
+          </article>
+
+          <article class="studio-card span-4">
+            <div class="studio-card-head">
+              <h2>Active tab state</h2>
+              <p>Web 4.0 keeps the current tab&rsquo;s latest runtime and API inventory available from the popup and studio.</p>
+            </div>
+            <div id="tab-state" class="studio-state-card"></div>
+          </article>
+
+          <article class="studio-card span-4">
+            <div class="studio-card-head">
+              <h2>What the remix runtime can do</h2>
+              <p>Each generated interface can use the same live data sources through the page bridge.</p>
+            </div>
+            <ul class="studio-capability-list">
+              <li>Read page context and semantic structure on demand.</li>
+              <li>Inspect grouped API signatures captured from fetch and XHR.</li>
+              <li>Replay requests through the source page context with cookies intact.</li>
+              <li>Edit html, css, and js live inside the runtime overlay.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="studio-accordion-wrap studio-chapter">
+        <div class="studio-accordion-strip">
+          <article class="studio-accordion-panel" style="background-image: url('https://picsum.photos/seed/web40-dom/1200/1400');">
+            <div>
+              <h3>DOM signals</h3>
+              <p>Titles, headings, forms, buttons, and visible copy are compressed into a model-readable snapshot.</p>
+            </div>
+          </article>
+          <article class="studio-accordion-panel" style="background-image: url('https://picsum.photos/seed/web40-code/1200/1400');">
+            <div>
+              <h3>Script edges</h3>
+              <p>Inline scripts and referenced bundles are sampled so the generator can infer behavior, state, and flows.</p>
+            </div>
+          </article>
+          <article class="studio-accordion-panel" style="background-image: url('https://picsum.photos/seed/web40-api/1200/1400');">
+            <div>
+              <h3>API replay</h3>
+              <p>Captured request signatures and response previews become the working surface for the new frontend.</p>
+            </div>
+          </article>
+          <article class="studio-accordion-panel" style="background-image: url('https://picsum.photos/seed/web40-remix/1200/1400');">
+            <div>
+              <h3>Runtime remix</h3>
+              <p>Every regeneration stays editable, so prompt remixes and manual code edits can both shape the result.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="studio-desire studio-chapter">
+        <div class="studio-desire-copy">
+          <p data-reveal="words">
+            The point is not to repaint the page. The point is to recast it. Web 4.0 turns a site&rsquo;s hidden data
+            plumbing into a visible product surface that users can actually control, while keeping the original
+            request vocabulary, state edges, and live responses close enough to stay functional.
+          </p>
+        </div>
+
+        <div class="studio-media-grid">
+          <article class="studio-media-card media-card">
+            <img src="https://picsum.photos/seed/web40-stage-1/1400/1200" alt="Runtime UI panel" />
+            <div>
+              <h3>Alternate product framing</h3>
+              <p>Generate a new interface hierarchy instead of mirroring the source page one-to-one.</p>
+            </div>
+          </article>
+          <article class="studio-media-card media-card">
+            <img src="https://picsum.photos/seed/web40-stage-2/1400/1200" alt="Network overlay" />
+            <div>
+              <h3>Visible live contracts</h3>
+              <p>Expose endpoints, states, and request loops as remixable design material.</p>
+            </div>
+          </article>
+          <article class="studio-media-card media-card">
+            <img src="https://picsum.photos/seed/web40-stage-3/1400/1200" alt="Code editing panel" />
+            <div>
+              <h3>Prompt and source editing</h3>
+              <p>Use prompts for big structural shifts, or edit the generated html, css, and js directly.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="studio-action studio-chapter">
+        <div class="studio-action-card">
+          <h2>Analyze a site, remix the runtime, and keep the data plumbing intact.</h2>
+          <p id="studio-status">
+            Capture begins on page load, and the generated runtime now replaces the live page body directly.
+          </p>
+          <div class="studio-hero-actions">
+            <button type="button" data-studio-action="analyze" class="primary">Replace current tab</button>
+            <button type="button" data-studio-action="remix">Run remix</button>
+            <button type="button" data-studio-action="toggle">Toggle dock</button>
+          </div>
+          <footer class="studio-footer-links">
+            <span>OpenRouter-driven generation</span>
+            <span>Live page bridge</span>
+            <span>Editable runtime source</span>
+          </footer>
+        </div>
+      </section>
+    </main>
+
+    <script src="vendor/gsap.min.js"></script>
+    <script src="vendor/ScrollTrigger.min.js"></script>
+    <script src="ui-common.js"></script>
+    <script src="studio.js"></script>
+  </body>
+</html>

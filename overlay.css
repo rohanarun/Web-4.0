@@ -1,0 +1,256 @@
+#web40-root,
+#web40-root * {
+  box-sizing: border-box;
+}
+
+#web40-root {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2147483647;
+  width: min(430px, calc(100vw - 32px));
+  font-family: "Satoshi", "Segoe UI", sans-serif;
+  color: #f4f7ff;
+  pointer-events: none;
+}
+
+#web40-root.web40-hidden {
+  display: none;
+}
+
+#web40-root .web40-shell {
+  display: grid;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+#web40-root .web40-toolbar,
+#web40-root .web40-panel {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at top left, rgba(70, 201, 255, 0.12), transparent 34%),
+    rgba(4, 8, 19, 0.9);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.34);
+}
+
+#web40-root .web40-toolbar {
+  border-radius: 24px;
+  padding: 16px 18px;
+  display: grid;
+  gap: 14px;
+}
+
+#web40-root .web40-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+#web40-root .web40-brand strong {
+  display: block;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#web40-root .web40-brand-sub {
+  display: block;
+  font-size: 11px;
+  color: rgba(217, 226, 255, 0.65);
+}
+
+#web40-root .web40-brand-mark {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 30% 30%, #ffffff, rgba(255, 255, 255, 0.24) 35%, transparent 36%),
+    linear-gradient(135deg, #6af7d5 0%, #53a4ff 50%, #ff9762 100%);
+  box-shadow: 0 0 24px rgba(106, 247, 213, 0.4);
+}
+
+#web40-root .web40-toolbar-copy {
+  display: grid;
+  gap: 6px;
+}
+
+#web40-root .web40-title-line {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f4f7ff;
+}
+
+#web40-root .web40-status-line {
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(214, 223, 255, 0.74);
+}
+
+#web40-root .web40-toolbar-actions,
+#web40-root .web40-sidebar-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#web40-root button {
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 16px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f9fbff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 180ms ease, background 180ms ease;
+}
+
+#web40-root button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+#web40-root .web40-sidebar-actions button:first-child {
+  background: linear-gradient(135deg, #f6f8ff 0%, #b6e5ff 48%, #89ffd8 100%);
+  color: #071019;
+}
+
+#web40-root .web40-panel {
+  border-radius: 28px;
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+  max-height: min(78vh, 920px);
+  overflow: auto;
+}
+
+#web40-root .web40-panel.web40-panel-collapsed {
+  display: none;
+}
+
+#web40-root .web40-panel-section {
+  display: grid;
+  gap: 10px;
+}
+
+#web40-root .web40-summary-text {
+  font-size: 13px;
+  line-height: 1.65;
+  color: rgba(236, 241, 255, 0.82);
+}
+
+#web40-root .web40-binding-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#web40-root .web40-binding-chip,
+#web40-root .web40-binding-empty {
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(239, 243, 255, 0.84);
+}
+
+#web40-root .web40-field {
+  display: grid;
+  gap: 8px;
+}
+
+#web40-root .web40-field span {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(214, 223, 255, 0.66);
+}
+
+#web40-root textarea {
+  width: 100%;
+  min-height: 180px;
+  resize: vertical;
+  padding: 14px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.035);
+  color: #f8fbff;
+  line-height: 1.55;
+  font: inherit;
+}
+
+#web40-root .web40-api-panel {
+  display: grid;
+  gap: 10px;
+}
+
+#web40-root .web40-api-panel h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+#web40-root .web40-api-list {
+  display: grid;
+  gap: 10px;
+}
+
+#web40-root .web40-api-item,
+#web40-root .web40-api-empty {
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+#web40-root .web40-api-item strong {
+  display: block;
+  margin: 6px 0;
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+#web40-root .web40-api-item p,
+#web40-root .web40-api-empty {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.55;
+  color: rgba(216, 224, 255, 0.74);
+}
+
+#web40-root .web40-api-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+#web40-root .web40-api-method {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #89ffd8;
+}
+
+#web40-root .web40-api-count {
+  font-size: 10px;
+  color: rgba(216, 224, 255, 0.62);
+}
+
+@media (max-width: 768px) {
+  #web40-root {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    top: 12px;
+  }
+
+  #web40-root .web40-toolbar-actions,
+  #web40-root .web40-sidebar-actions {
+    flex-direction: column;
+  }
+
+  #web40-root button {
+    width: 100%;
+  }
+}

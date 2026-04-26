@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Web 4.0</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup-shell">
+      <div class="popup-topbar">
+        <div>
+          <strong>Web 4.0</strong>
+          <p>Reverse engineer the live web into remixable runtime UIs.</p>
+        </div>
+        <button id="open-studio" type="button">Studio</button>
+      </div>
+
+      <section class="popup-card">
+        <label class="popup-field">
+          <span>OpenRouter key</span>
+          <input id="api-key" type="password" placeholder="sk-or-v1-..." />
+        </label>
+
+        <label class="popup-field">
+          <span>Model</span>
+          <input id="model" type="text" />
+        </label>
+      </section>
+
+      <section class="popup-card">
+        <label class="popup-field">
+          <span>Default generation prompt</span>
+          <textarea id="default-prompt"></textarea>
+        </label>
+
+        <label class="popup-field">
+          <span>Remix prompt</span>
+          <textarea id="remix-prompt"></textarea>
+        </label>
+      </section>
+
+      <section class="popup-actions">
+        <button id="save-settings" type="button" class="primary">Save settings</button>
+        <button id="analyze-tab" type="button">Replace current tab</button>
+        <button id="remix-tab" type="button">Run remix</button>
+        <button id="toggle-overlay" type="button">Toggle dock</button>
+      </section>
+
+      <section class="popup-card">
+        <div class="popup-state-heading">
+          <h2>Current tab</h2>
+          <button id="refresh-state" type="button">Refresh</button>
+        </div>
+        <div id="tab-state" class="popup-state"></div>
+      </section>
+
+      <p id="status-line" class="popup-status"></p>
+    </main>
+
+    <script src="ui-common.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
