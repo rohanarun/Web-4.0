@@ -2,6 +2,8 @@
 
 Web 4.0 is a Chrome extension that watches a live website, infers how it works from its visible UI and network traffic, and generates a replacement frontend at runtime that still uses the original site's data and APIs.
 
+Live Chrome Extension: https://chromewebstore.google.com/detail/web-40/ocpebaffbjeagobklipfnbdddbfknhkj?authuser=1&hl=en&pli=1
+
 The generated UI is not just a mockup. By default it replaces the current page body directly and gets a small runtime bridge so it can:
 
 - read the captured page context
